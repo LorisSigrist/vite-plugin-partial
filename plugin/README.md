@@ -8,7 +8,7 @@ npm install --save-dev vite-plugin-partial
 
 ```javascript
 // vite.config.js
-import vitePluginPartial from 'vite-plugin-feature'
+import vitePluginPartial from 'vite-plugin-partial'
 
 export default defineConfig({
   plugins: [vitePluginPartial()]
