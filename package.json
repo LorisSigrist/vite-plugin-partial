@@ -5,5 +5,8 @@
   "workspaces" : [
     "plugin",
     "example"
-  ]
+  ],
+  "scripts": {
+    "test" : "npm run test -w=plugin"
+  }
 }

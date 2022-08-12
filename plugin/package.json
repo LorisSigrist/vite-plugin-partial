@@ -1,6 +1,7 @@
 {
     "name": "vite-plugin-partial",
     "description": "Use partials in your html files for easy html reuse",
+    "version": "0.0.1",
     "keywords": [
         "vite",
         "vite-plugin",
@@ -11,7 +12,8 @@
     "main" : "dist/index.js",
     "scripts": {
         "build": "tsc",
-        "test": "vitest"
+        "test": "vitest run",
+        "watch": "vitest & tsc --watch"
     },
     "peerDependencies": {
         "vite": "*"
@@ -19,5 +21,9 @@
     "devDependencies": {
         "typescript": "^4.7.4",
         "vitest": "^0.21.1"
-    }
+    },
+    "files": [
+        "dist/*",
+        "README.md"
+    ]
 }
