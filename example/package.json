@@ -5,6 +5,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^2.9.15"
+    "vite": "^2.9.15",
+    "vite-plugin-partial" : "*"
   }
 }

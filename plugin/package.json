@@ -1,0 +1,22 @@
+{
+    "name": "vite-plugin-partial",
+    "description": "Use partials in your html files for easy html reuse",
+    "keywords": [
+        "vite",
+        "vite-plugin",
+        "partials"
+    ],
+    "author": "Loris Sigrist",
+    "license": "ISC",
+    "main" : "dist/index.js",
+    "scripts": {
+        "build": "tsc",
+        "test": "echo \"Error: No test script specified\""
+    },
+    "peerDependencies": {
+        "vite": "*"
+    },
+    "devDependencies": {
+        "typescript": "^4.7.4"
+    }
+}
