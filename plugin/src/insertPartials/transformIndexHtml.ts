@@ -8,22 +8,23 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
   while (parseResult !== undefined) {
     const { startIndex, afterIndex, src } = parseResult
 
-    //Resolve the content of the partial
-    let partialContent = ''
+    //If the src attribute is empty, just return the html with the <vite-partial> tag removed
     if (src === '') {
       console.warn(
         `Warn: <vite-partial> tag at character ${startIndex} has an empty src="" attribute`
       )
-    } else {
-      const filePath = ctx.filename
-      const serverRoot = ctx.server?.config.root
-      if (!serverRoot) throw "Could not resolve vite's base directory"
-
-      const path = await resolvePartialPath(src, filePath, serverRoot)
-      partialContent = await getPartialContent(path)
+      html = html.slice(0, startIndex) + html.slice(afterIndex)
     }
 
-    //Insert the content
+
+    const filePath = ctx.filename
+    const serverRoot = ctx.server?.config.root
+    if (!serverRoot) throw "Could not resolve vite's base directory"
+
+    const path = await resolvePartialPath(src, filePath, serverRoot)
+    const partialContent = await getPartialContent(path)
+
+    //Insert the content into the html, replacing the <vite-partial> tag 
     html = html.slice(0, startIndex) + partialContent + html.slice(afterIndex)
 
     parseResult = findPartialTag(html) //Find the next Tag, if there is one;
