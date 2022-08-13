@@ -9,10 +9,6 @@
     The y at the end makes it sticky. That means it will only look for a match at the exact location of regex.lastIndex
 */
 
-
-
-
-
 /**
  *  Searches for the first <vite-partail src="..."> tag, and returns information about it (if it exists)
  *
@@ -25,34 +21,16 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
   //Be mindful of how you manipulate these propertiess
 
   const tagStartRegex = /<vite-partial/
-  const srcAttributeRegex = /[^>]*src="(?<src>.*)"/y
   const tagEndRegex = /.*\/>/y
 
-
-  const tagStartMatch = html.match(tagStartRegex);
+  const tagStartMatch = html.match(tagStartRegex)
   if (!tagStartMatch || tagStartMatch.index === undefined) return undefined //No match found
   const startIndex = tagStartMatch.index
 
-  //Start searching the src attribute after the tag start
-  srcAttributeRegex.lastIndex = startIndex + tagStartMatch[0].length
-  const srcAttributeMatch = srcAttributeRegex.exec(html)
-
-  if (
-    !srcAttributeMatch ||
-    srcAttributeMatch.index == undefined ||
-    !srcAttributeMatch.groups ||
-    srcAttributeMatch.groups['src'] === undefined
-  ) {
-    throw SyntaxError(
-      `The <vite-partial/> tag at character ${startIndex} does not have a "src" attribute. Currently this is mandatory`
-    )
-  }
-
-  const src = srcAttributeMatch.groups.src
-
-  const srcAttributeEndIndex =
-    srcAttributeMatch.index + srcAttributeMatch[0].length
-  tagEndRegex.lastIndex = srcAttributeEndIndex
+  //Get all the attributes
+  const attributeStartIndex = startIndex + tagStartMatch[0].length
+  const {src, afterIndex: afterAttributesIndex} = getAttributes(html, attributeStartIndex);
+  tagEndRegex.lastIndex = afterAttributesIndex;
 
   const tagEndMatch = tagEndRegex.exec(html)
   if (!tagEndMatch || tagEndMatch.index === undefined) {
@@ -69,13 +47,32 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
     afterIndex,
     src
   }
+}
 
+function getAttributes (
+  html: string,
+  startIndex: number
+): { src: string | undefined; afterIndex: number } {
+  
+  const srcAttributeRegex = /[^>]*src="(?<src>.*)"/y
+  srcAttributeRegex.lastIndex = startIndex;
+  const srcAttributeMatch = srcAttributeRegex.exec(html);
+
+  if(!srcAttributeMatch || srcAttributeMatch.index === undefined || !srcAttributeMatch.groups || !srcAttributeMatch.groups.src){
+    //No src attribute was found.
+    return {src: undefined, afterIndex: startIndex};
+  }
+
+  const src = srcAttributeMatch.groups.src;
+  const afterIndex = srcAttributeMatch.index + srcAttributeMatch[0].length;
+
+  return { src, afterIndex }
 }
 
 type PartialTagSearchResult =
   | {
       startIndex: number
       afterIndex: number
-      src: string
+      src: string | undefined
     }
   | undefined

@@ -22,9 +22,11 @@ describe('<vite-partial> parsing', () => {
     expect(()=>findPartialTag(html)).toThrowError(SyntaxError);
   })
 
-  it('Throws SyntaxError if there is no src attribute', ()=> {
-    const html = '<html><vite-partial/>';
-    expect(()=>findPartialTag(html)).toThrowError(SyntaxError);
+  it('Returns undefined src when src attribute is missing', ()=> {
+    const html = '<html><vite-partial/></html>';
+    const result = findPartialTag(html)
+    expect(result).toBeDefined();
+    expect(result?.src).toBeUndefined();
   })
 
 
