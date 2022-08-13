@@ -10,7 +10,7 @@ async function mockFsRead (path: string): Promise<Buffer> {
     }
 
     default:
-      return Buffer.from('')
+      throw new Error("File not found");
   }
 }
 
@@ -36,6 +36,12 @@ describe('Reading Partial Files', () => {
     expect(async () => {
       await getPartialContent('/invalid.html')
     }).rejects.toThrowError(SyntaxError)
+  })
+
+  it('Throws if the path is invalud', async () => {
+    expect(async () => {
+      await getPartialContent('asdfxgchvjbnk')
+    }).rejects.toThrowError();
   })
 
 
