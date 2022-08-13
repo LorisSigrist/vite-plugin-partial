@@ -1,5 +1,5 @@
 import type { Plugin } from "vite"
-import transformIndexHtml from "./transformIndexHtml"
+import transformIndexHtml from "./insertPartials/transformIndexHtml"
 
 export default function vitePluginPartial() : Plugin{
     return {

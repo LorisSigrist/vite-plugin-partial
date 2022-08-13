@@ -1,7 +1,7 @@
 import { Plugin, IndexHtmlTransformContext } from 'vite'
 import { resolve } from 'path'
 import { readFile } from 'fs/promises'
-
+import resolvePartialPath from './resolvePartialPath'
 
 /* Regex Cheatsheet
     \s matches any whitespace
@@ -13,8 +13,8 @@ import { readFile } from 'fs/promises'
     [^chars] means anything except the chars
 */
 
-const tagStartRegex = /<vite-partial/;
-const srcAttributeRegex = /^[^>]*src="(?<src>.*)"/;
+const tagStartRegex = /<vite-partial/
+const srcAttributeRegex = /^[^>]*src="(?<src>.*)"/
 const tagEndRegex = /^.*\/>/
 
 const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
@@ -41,65 +41,62 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
         `<vite-partial> tag at ${tagStartIndex} has no src attribute. The src attribute is mandatory`
       )
 
-
-    const src = srcAttrMatch.groups.src;
-    const htmlAfterSrcAttribute = htmlAfterTagOpen.slice(srcAttrMatch.index + srcAttrMatch[0].length);
-
+    const src = srcAttrMatch.groups.src
+    const htmlAfterSrcAttribute = htmlAfterTagOpen.slice(
+      srcAttrMatch.index + srcAttrMatch[0].length
+    )
 
     //Resolve the content of the partial
-    let partialContent = "";
+    let partialContent = ''
     if (src === '') {
       console.warn(
         `Warn: <vite-partial> tag at ${tagStartIndex} has an empty src="" attribute`
-      );
-    }
-    else {
-        if(!src.endsWith(".html")) throw new Error(`<vite-partial> at ${tagStartIndex}: src attribute must point to an html file (ending in .html)`)
+      )
+    } else {
+      
+      const filePath = ctx.filename
+      const serverRoot = ctx.server?.config.root
+      if (!serverRoot) throw "Could not resolve vite's base directory"
 
-        //Non empty src attribute
-        let path;
-        if(src.startsWith("/")) {
-            let serverRoot = ctx.server?.config.root
-            if(!serverRoot) throw "Could not resolve vite's base directory";
-            
-            const pathFromRoot = src.slice(1); //Remove starting slash
-            path = resolve(serverRoot, pathFromRoot);
-        }else{
-            const filename = ctx.filename;
-            const directory = filename.replace(ctx.path, "/");
+      const path = await resolvePartialPath(src, filePath, serverRoot)
 
-            path = resolve(directory, src);
-        }
-
-
-        try {
-            partialContent = await getPartialContent(path);
-        }catch(e) {
-            throw new Error(`vite-plugin-partial: Could not read partial for <vite-partial src="${src} /> make sure it exists"`)
-        }
-        
+      try {
+        partialContent = await getPartialContent(path)
+      } catch (e) {
+        console.log(path)
+        throw new Error(
+          `vite-plugin-partial: Could not read partial for <vite-partial src="${src}" /> make sure it exists"`
+        )
+      }
     }
 
     //Find end of the tag
-    const tagEndMatch = htmlAfterSrcAttribute.match(tagEndRegex);
-    if(!tagEndMatch || tagEndMatch.index === undefined) {
-      throw new Error("Could not find end of tag. Currently all <vite-partial/> tags must be self closing");
+    const tagEndMatch = htmlAfterSrcAttribute.match(tagEndRegex)
+    if (!tagEndMatch || tagEndMatch.index === undefined) {
+      throw new Error(
+        'Could not find end of tag. Currently all <vite-partial/> tags must be self closing'
+      )
     }
 
-    const tagEndIndex = tagEndMatch.index + tagEndMatch[0].length + html.length - htmlAfterSrcAttribute.length;
+    const tagEndIndex =
+      tagEndMatch.index +
+      tagEndMatch[0].length +
+      html.length -
+      htmlAfterSrcAttribute.length
 
     //Insert the content
-    html = html.slice(0,tagStartIndex) + partialContent + html.slice(tagEndIndex);
+    html =
+      html.slice(0, tagStartIndex) + partialContent + html.slice(tagEndIndex)
 
     match = html.match(tagStartRegex) //Find the next Tag, if there is one;
   }
 
-  return html;
+  return html
 }
 
-async function getPartialContent(path : string) : Promise<string> {
-    const content = await readFile(path);
-    return content.toString();
+async function getPartialContent (path: string): Promise<string> {
+  const content = await readFile(path)
+  return content.toString()
 }
 
 export default transformIndexHtml
