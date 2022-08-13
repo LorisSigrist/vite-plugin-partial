@@ -15,7 +15,7 @@ import { readFile } from 'fs/promises'
 
 const tagStartRegex = /<vite-partial/;
 const srcAttributeRegex = /^[^>]*src="(?<src>.*)"/;
-const tagEndRegex = /^[^>]\/>/
+const tagEndRegex = /^.*\/>/
 
 const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
   let match = html.match(tagStartRegex)
@@ -43,7 +43,7 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
 
 
     const src = srcAttrMatch.groups.src;
-    const htmlAfterSrcAttribute = html.slice(srcAttrMatch.index + srcAttrMatch[0].length);
+    const htmlAfterSrcAttribute = htmlAfterTagOpen.slice(srcAttrMatch.index + srcAttrMatch[0].length);
 
 
     //Resolve the content of the partial
@@ -80,18 +80,21 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
         
     }
 
-    console.log(partialContent);
-
     //Find end of the tag
     const tagEndMatch = htmlAfterSrcAttribute.match(tagEndRegex);
     if(!tagEndMatch || tagEndMatch.index === undefined) {
       throw new Error("Could not find end of tag. Currently all <vite-partial/> tags must be self closing");
     }
 
-    const endOfTagIndex = tagEndMatch.index + tagEndMatch[0].length + html.length - htmlAfterSrcAttribute.length;
+    const tagEndIndex = tagEndMatch.index + tagEndMatch[0].length + html.length - htmlAfterSrcAttribute.length;
 
-    break;
+    //Insert the content
+    html = html.slice(0,tagStartIndex) + partialContent + html.slice(tagEndIndex);
+
+    match = html.match(tagStartRegex) //Find the next Tag, if there is one;
   }
+
+  return html;
 }
 
 async function getPartialContent(path : string) : Promise<string> {
