@@ -15,22 +15,19 @@ import { readFile } from 'fs/promises'
 
 const tagStartRegex = /<vite-partial/;
 const srcAttributeRegex = /^[^>]*src="(?<src>.*)"/;
-const tagEndRegexes = [
-    /^[^>\/]*\/>/,          //If the tag closes with />, it finds that. If it closes with > it doesn't find anything
-    /<\/vite-partial\s*>/      //Finds the next </vite-partial> tag
-]
+const tagEndRegex = /^[^>]\/>/
 
 const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
   let match = html.match(tagStartRegex)
-  while (match) {
-    const index = match.index
+  while (match && match.index !== undefined) {
+    const tagStartIndex = match.index
     const length = match[0].length
-    if (index === undefined)
+    if (tagStartIndex === undefined)
       throw new Error('RegExp match starts at index undefined')
 
     //Slice off anything past the starting tag
-    const startIndex = index + length
-    const htmlAfterTagOpen = html.slice(startIndex)
+    const tagOpeningEndIndex = tagStartIndex + length
+    const htmlAfterTagOpen = html.slice(tagOpeningEndIndex)
 
     //Find the src="" attribute
     const srcAttrMatch = htmlAfterTagOpen.match(srcAttributeRegex)
@@ -41,7 +38,7 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
       srcAttrMatch.groups['src'] === undefined
     )
       throw new Error(
-        `<vite-partial> tag at ${index} has no src attribute. The src attribute is mandatory`
+        `<vite-partial> tag at ${tagStartIndex} has no src attribute. The src attribute is mandatory`
       )
 
 
@@ -53,11 +50,11 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
     let partialContent = "";
     if (src === '') {
       console.warn(
-        `Warn: <vite-partial> tag at ${index} has an empty src="" attribute`
+        `Warn: <vite-partial> tag at ${tagStartIndex} has an empty src="" attribute`
       );
     }
     else {
-        if(!src.endsWith(".html")) throw new Error(`<vite-partial> at ${index}: src attribute must point to an html file (ending in .html)`)
+        if(!src.endsWith(".html")) throw new Error(`<vite-partial> at ${tagStartIndex}: src attribute must point to an html file (ending in .html)`)
 
         //Non empty src attribute
         let path;
@@ -83,26 +80,17 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
         
     }
 
-    
-
     console.log(partialContent);
 
     //Find end of the tag
-    const possibleEndings : RegExpMatchArray[] = [];
-    for(const regex of tagEndRegexes) {
-        const match = htmlAfterSrcAttribute.match(regex);
-        if(!match) continue;
-        possibleEndings.push(match);
+    const tagEndMatch = htmlAfterSrcAttribute.match(tagEndRegex);
+    if(!tagEndMatch || tagEndMatch.index === undefined) {
+      throw new Error("Could not find end of tag. Currently all <vite-partial/> tags must be self closing");
     }
-    
-    //Filter out all the non-matches. I dont know if this ever actually removes anything, but typescript complains, so it's here
-    possibleEndings.filter(ending => ending.index !== undefined);
 
-
-
+    const endOfTagIndex = tagEndMatch.index + tagEndMatch[0].length + html.length - htmlAfterSrcAttribute.length;
 
     break;
-    match = html.match(tagStartRegex);
   }
 }
 
