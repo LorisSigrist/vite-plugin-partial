@@ -14,6 +14,8 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
         `Warn: <vite-partial> tag at character ${startIndex} has an empty src="" attribute`
       )
       html = html.slice(0, startIndex) + html.slice(afterIndex)
+      parseResult = findPartialTag(html) //Find the next Tag, if there is one;
+      continue;
     }
 
 
