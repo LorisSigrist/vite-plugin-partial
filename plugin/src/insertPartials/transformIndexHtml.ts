@@ -1,15 +1,12 @@
-import { Plugin, IndexHtmlTransformContext } from 'vite'
-import { readFile } from 'fs/promises'
+import { Plugin } from 'vite'
 import resolvePartialPath from './resolvePartialPath'
 import findPartialTag from './findPartialTag'
-
+import getPartialContent from './getPartialContent'
 
 const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
   let parseResult = findPartialTag(html)
   while (parseResult !== undefined) {
-
-    const {startIndex, afterIndex, src } = parseResult;
-
+    const { startIndex, afterIndex, src } = parseResult
 
     //Resolve the content of the partial
     let partialContent = ''
@@ -23,30 +20,16 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
       if (!serverRoot) throw "Could not resolve vite's base directory"
 
       const path = await resolvePartialPath(src, filePath, serverRoot)
-
-      try {
-        partialContent = await getPartialContent(path)
-      } catch (e) {
-        console.log(path)
-        throw new Error(
-          `vite-plugin-partial: Could not read partial for <vite-partial src="${src}" /> make sure it exists"`
-        )
-      }
+      partialContent = await getPartialContent(path)
     }
 
     //Insert the content
-    html =
-      html.slice(0, startIndex) + partialContent + html.slice(afterIndex)
+    html = html.slice(0, startIndex) + partialContent + html.slice(afterIndex)
 
     parseResult = findPartialTag(html) //Find the next Tag, if there is one;
   }
 
   return html
-}
-
-async function getPartialContent (path: string): Promise<string> {
-  const content = await readFile(path)
-  return content.toString()
 }
 
 export default transformIndexHtml
