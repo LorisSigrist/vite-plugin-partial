@@ -8,10 +8,10 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
   while (parseResult !== undefined) {
     const { startIndex, afterIndex, src } = parseResult
 
-    //If the src attribute is empty, just return the html with the <vite-partial> tag removed
-    if (src === '') {
+    //If the src attribute is empty or missing, just return the html with the <vite-partial> tag removed
+    if (!src || src === '') {
       console.warn(
-        `Warn: <vite-partial> tag at character ${startIndex} has an empty src="" attribute`
+        `Warn: <vite-partial> tag at character ${startIndex} has an empty or missing src="" attribute`
       )
       html = html.slice(0, startIndex) + html.slice(afterIndex)
       parseResult = findPartialTag(html) //Find the next Tag, if there is one;
