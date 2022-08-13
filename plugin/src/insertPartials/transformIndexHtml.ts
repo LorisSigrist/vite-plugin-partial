@@ -1,5 +1,4 @@
 import { Plugin, IndexHtmlTransformContext } from 'vite'
-import { resolve } from 'path'
 import { readFile } from 'fs/promises'
 import resolvePartialPath from './resolvePartialPath'
 import findPartialTag from './findPartialTag'
