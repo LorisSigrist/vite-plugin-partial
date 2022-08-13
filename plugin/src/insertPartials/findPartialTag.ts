@@ -6,7 +6,7 @@
     the g after the regex mans global. Aka. look for all matches, not just the first one
     (?<name>regex) is a named group. It takes anything the regex in the parentathese matches, and makes it accessible on match.group["name"];
     [^chars] means anything except the chars
-    The y at the end makes it sticky. That means it will only look for a match at the exact location of regex.lastIndex
+    The y at the end makes it sticky. That means it will only look for a match at the exact location of regex.lastIndex (yes, regex are stateful in js, deal with it)
 */
 
 /**
