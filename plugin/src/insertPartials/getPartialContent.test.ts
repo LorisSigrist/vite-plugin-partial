@@ -37,7 +37,7 @@ describe('Reading Partial Files', () => {
   })
 
     
-  it('Throws if the path is invalud', async () => {
+  it('Throws if the path is invalid', async () => {
     expect(async () => {
       await getPartialContent('asdfxgchvjbnk', '/',[])
     }).rejects.toThrowError()

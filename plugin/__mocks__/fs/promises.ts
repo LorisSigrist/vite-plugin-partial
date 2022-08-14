@@ -25,6 +25,14 @@ async function mockFsRead (path: string): Promise<Buffer> {
       return Buffer.from('<h1>HelloWorld<h1>')
     }
 
+    case '/circular/first.html' : {
+      return Buffer.from('<h1><vite-partial src="/circular/second.html"/><h1>')
+    }
+
+    case '/circular/second.html' : {
+      return Buffer.from('<h1><vite-partial src="/circular/first.html"/><h1>')
+    }
+
     default:
       throw new Error('File not found')
   }
