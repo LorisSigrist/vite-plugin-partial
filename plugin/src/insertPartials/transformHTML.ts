@@ -3,7 +3,7 @@ import resolvePartialPath from './resolvePartialPath'
 import findPartialTag from './findPartialTag'
 import getPartialContent from './getPartialContent'
 
-const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
+const transformIndexHtml = async (html: string, filePath: string, serverRoot: string) => {
   let parseResult = findPartialTag(html)
   while (parseResult !== undefined) {
     const { startIndex, afterIndex, src } = parseResult
@@ -17,11 +17,6 @@ const transformIndexHtml: Plugin['transformIndexHtml'] = async (html, ctx) => {
       parseResult = findPartialTag(html) //Find the next Tag, if there is one;
       continue;
     }
-
-
-    const filePath = ctx.filename
-    const serverRoot = ctx.server?.config.root
-    if (!serverRoot) throw "Could not resolve vite's base directory"
 
     const path = await resolvePartialPath(src, filePath, serverRoot)
     const partialContent = await getPartialContent(path)
