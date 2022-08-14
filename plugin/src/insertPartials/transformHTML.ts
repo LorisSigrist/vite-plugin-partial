@@ -3,7 +3,7 @@ import resolvePartialPath from './resolvePartialPath'
 import findPartialTag from './findPartialTag'
 import getPartialContent from './getPartialContent'
 
-const transformIndexHtml = async (html: string, filePath: string, serverRoot: string) => {
+const transformHtml = async (html: string, filePath: string, serverRoot: string) => {
   let parseResult = findPartialTag(html)
   while (parseResult !== undefined) {
     const { startIndex, afterIndex, src } = parseResult
@@ -19,7 +19,7 @@ const transformIndexHtml = async (html: string, filePath: string, serverRoot: st
     }
 
     const path = await resolvePartialPath(src, filePath, serverRoot)
-    const partialContent = await getPartialContent(path)
+    const partialContent = await getPartialContent(path, serverRoot);
 
     //Insert the content into the html, replacing the <vite-partial> tag 
     html = html.slice(0, startIndex) + partialContent + html.slice(afterIndex)
@@ -30,4 +30,4 @@ const transformIndexHtml = async (html: string, filePath: string, serverRoot: st
   return html
 }
 
-export default transformIndexHtml
+export default transformHtml
