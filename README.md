@@ -9,4 +9,7 @@ The project uses [npm workspaces]("https://docs.npmjs.com/cli/v7/using-npm/works
 - `plugin` Contains the actual plugin
 - `example` Is a vite app using the plugin
 
-We use vitest for unit-tests and (will use) cypress for e2e tests.
+We use vitest for testing.
+
+## Contributing
+Contributions are welcome. Be they in the form of an issue, a pull request or something else. I'll try to get back to you as quickly as possible.
