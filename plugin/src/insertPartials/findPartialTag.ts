@@ -29,18 +29,12 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
 
   //Get all the attributes
   const attributeStartIndex = startIndex + tagStartMatch[0].length
-  const {src, afterIndex: afterAttributesIndex} = getAttributes(html, attributeStartIndex);
-  tagEndRegex.lastIndex = afterAttributesIndex;
+  const { src, afterIndex: afterAttributesIndex } = getAttributes(
+    html,
+    attributeStartIndex
+  )
 
-  const tagEndMatch = tagEndRegex.exec(html)
-  if (!tagEndMatch || tagEndMatch.index === undefined) {
-    throw new SyntaxError(
-      `Could not find end of <vite-partial> tag at character ${startIndex}. 
-         Info: Currently all <vite-partial/> tags must be self closing`
-    )
-  }
-
-  const afterIndex = tagEndMatch.index + tagEndMatch[0].length
+  const afterIndex = findTagEnd(html, afterAttributesIndex);
 
   return {
     startIndex,
@@ -49,22 +43,48 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
   }
 }
 
+function findTagEnd (html: string, startIndex: number): number {
+  const selfClosingRegex = /.*\/>/y
+  const closingTagRegex = /\s*>.*<\/vite-partial\s*>/y
+
+  selfClosingRegex.lastIndex = startIndex
+  const selfClosingMatch = selfClosingRegex.exec(html)
+  if (selfClosingMatch && selfClosingMatch.index) {
+    return selfClosingMatch.index + selfClosingMatch[0].length
+  }
+
+  closingTagRegex.lastIndex = startIndex
+  const closingTagMatch = closingTagRegex.exec(html)
+  if (closingTagMatch && closingTagMatch.index) {
+    return closingTagMatch.index + closingTagMatch[0].length
+  }
+
+  //If no tag is found, throw
+  throw new SyntaxError(
+    `Could not find end of <vite-partial> tag at character ${startIndex}`
+  )
+}
+
 function getAttributes (
   html: string,
   startIndex: number
 ): { src: string | undefined; afterIndex: number } {
-  
   const srcAttributeRegex = /[^>]*src="(?<src>.*)"/y
-  srcAttributeRegex.lastIndex = startIndex;
-  const srcAttributeMatch = srcAttributeRegex.exec(html);
+  srcAttributeRegex.lastIndex = startIndex
+  const srcAttributeMatch = srcAttributeRegex.exec(html)
 
-  if(!srcAttributeMatch || srcAttributeMatch.index === undefined || !srcAttributeMatch.groups || !srcAttributeMatch.groups.src){
+  if (
+    !srcAttributeMatch ||
+    srcAttributeMatch.index === undefined ||
+    !srcAttributeMatch.groups ||
+    !srcAttributeMatch.groups.src
+  ) {
     //No src attribute was found.
-    return {src: undefined, afterIndex: startIndex};
+    return { src: undefined, afterIndex: startIndex }
   }
 
-  const src = srcAttributeMatch.groups.src;
-  const afterIndex = srcAttributeMatch.index + srcAttributeMatch[0].length;
+  const src = srcAttributeMatch.groups.src
+  const afterIndex = srcAttributeMatch.index + srcAttributeMatch[0].length
 
   return { src, afterIndex }
 }

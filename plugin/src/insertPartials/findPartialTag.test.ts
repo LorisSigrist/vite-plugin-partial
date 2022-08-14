@@ -29,5 +29,24 @@ describe('<vite-partial> parsing', () => {
     expect(result?.src).toBeUndefined();
   })
 
+  it('Parses vite-partial tag with closing tag and src attribute', ()=>{
+    const html = '<html><vite-partial src="partial.html"><p>hello world</p></vite-partial></html>'
+    const result = findPartialTag(html)
+
+    expect(result).toBeDefined();
+    expect(result?.src).toBe("partial.html");
+    expect(html.substring(0,result?.startIndex)).toBe("<html>")
+    expect(html.substring(result?.afterIndex ?? 0)).toBe("</html>")
+  })
+
+  it('Parses vite-partial tag with closing tag and no src attribute', ()=>{
+    const html = '<html><vite-partial><p>hello world</p></vite-partial></html>'
+    const result = findPartialTag(html)
+
+    expect(result).toBeDefined();
+    expect(result?.src).toBeUndefined();
+    expect(html.substring(0,result?.startIndex)).toBe("<html>")
+    expect(html.substring(result?.afterIndex ?? 0)).toBe("</html>")
+  })
 
 })
