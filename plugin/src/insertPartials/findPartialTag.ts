@@ -43,8 +43,8 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
 }
 
 function findTagEnd (html: string, startIndex: number): number {
-  const selfClosingRegex = /.*\/>/y
-  const closingTagRegex = /\s*>.*<\/vite-partial\s*>/y
+  const selfClosingRegex = /[^>]*\/>/y
+  const closingTagRegex = /\s*>.*<\/vite-partial>/y
 
   selfClosingRegex.lastIndex = startIndex
   const selfClosingMatch = selfClosingRegex.exec(html)
@@ -55,6 +55,19 @@ function findTagEnd (html: string, startIndex: number): number {
   closingTagRegex.lastIndex = startIndex
   const closingTagMatch = closingTagRegex.exec(html)
   if (closingTagMatch && closingTagMatch.index) {
+
+    //Find the next opening <vite-partial tag
+    //If it comes before we have close the current one, throw
+    const openingTagRegex = /.*<vite-partial/y
+    openingTagRegex.lastIndex = startIndex;
+    const openingTagMatch = openingTagRegex.exec(html);
+    if(openingTagMatch && openingTagMatch.index) {
+      const startOfClosingTagIndex = closingTagMatch.index + closingTagMatch[0].length - "</vite-partial>".length
+      if(openingTagMatch.index < startOfClosingTagIndex) {
+        throw new SyntaxError("Nesting <vite-partial> tags is not allowed");
+      }
+    }
+
     return closingTagMatch.index + closingTagMatch[0].length
   }
 

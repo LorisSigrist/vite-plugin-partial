@@ -49,4 +49,15 @@ describe('<vite-partial> parsing', () => {
     expect(html.substring(result?.afterIndex ?? 0)).toBe("</html>")
   })
 
+  it('Throws SyntaxError on nested self-closing <vite-partial> tags', ()=>{
+    const html = '<html><vite-partial><p><vite-partial/></p></vite-partial></html>'
+    expect(()=>findPartialTag(html)).toThrowError(SyntaxError);
+  })
+
+  it('Throws SyntaxError on nested <vite-partial> tags', ()=>{
+    const html = '<html><vite-partial><vite-partial></vite-partial></vite-partial></html>'
+    expect(()=>findPartialTag(html)).toThrowError(SyntaxError);
+  })
+
+
 })
