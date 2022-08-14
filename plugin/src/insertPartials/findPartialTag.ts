@@ -21,7 +21,6 @@ export default function findPartialTag (html: string): PartialTagSearchResult {
   //Be mindful of how you manipulate these propertiess
 
   const tagStartRegex = /<vite-partial/
-  const tagEndRegex = /.*\/>/y
 
   const tagStartMatch = html.match(tagStartRegex)
   if (!tagStartMatch || tagStartMatch.index === undefined) return undefined //No match found
