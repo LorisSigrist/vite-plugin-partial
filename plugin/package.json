@@ -1,7 +1,7 @@
 {
     "name": "vite-plugin-partial",
     "description": "Use partials in your html files for easy html reuse",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "homepage": "https://github.com/LorisSigrist/vite-plugin-partial#readme",
     "repository": "https://github.com/LorisSigrist/vite-plugin-partial#readme",
     "bugs": {
